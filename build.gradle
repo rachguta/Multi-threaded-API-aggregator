@@ -17,6 +17,8 @@ dependencies {
     implementation 'com.fasterxml.jackson.core:jackson-databind:2.21.2'
     // Source: https://mvnrepository.com/artifact/org.slf4j/slf4j-simple
     implementation 'org.slf4j:slf4j-simple:2.0.17'
+    // Source: https://mvnrepository.com/artifact/org.apache.commons/commons-csv
+    implementation 'org.apache.commons:commons-csv:1.14.1'
     testImplementation platform('org.junit:junit-bom:6.0.0')
     testImplementation 'org.junit.jupiter:junit-jupiter'
     testRuntimeOnly 'org.junit.platform:junit-platform-launcher'
