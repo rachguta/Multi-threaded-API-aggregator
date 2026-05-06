@@ -5,45 +5,47 @@ import org.example.mode.InteractiveMode;
 import org.example.mode.Mode;
 
 
+import java.net.URLEncoder;
+import java.nio.charset.StandardCharsets;
 import java.util.*;
 
 public class CliManager {
     private static final Scanner in = new Scanner(System.in);
+
     public static Mode readMode() throws NoSuchElementException {
-        Mode mode;
         System.out.println("Choose the mode:\n 1. Auto\n 2. Interactive");
         while(true){
-            java.lang.String modeStr = in.nextLine().trim();
+            String modeStr = in.nextLine().trim();
             if(modeStr.equals("1") || modeStr.equalsIgnoreCase("auto")){
-                mode = new AutoMode();
-                return mode;
+                return new AutoMode();
             }
             else if(modeStr.equals("2") || modeStr.equalsIgnoreCase("interactive")){
-                mode = new InteractiveMode();
-                return mode;
+                return new InteractiveMode();
             }
             else{
                 System.out.println("Invalid value of mode. Try again");
             }
         }
     }
+
     public static API[] readApis() throws NoSuchElementException {
         Set<API> apis = new LinkedHashSet<>();
-        List<java.lang.String> apiNames = new ArrayList<>();
+        List<String> apiNames = new ArrayList<>();
         for(API api : API.values()) {
             apiNames.add(api.name().toLowerCase());
         }
-        java.lang.String apiNamesString = java.lang.String.join(" ", apiNames);
+        String apiNamesString = String.join(" ", apiNames);
         System.out.println("Write a list of APIs that you want to use (" +
                 apiNamesString + ").");
         while(true){
-            java.lang.String line = in.nextLine().trim();
-            java.lang.String[] enteredApis = line.trim().split("[,;\\s]+");
+            String line = in.nextLine().trim();
+            String[] enteredApis = line.split("[,;\\s]+");
             boolean allValid = true;
-            for(java.lang.String enteredApi : enteredApis){
+            for(String enteredApi : enteredApis){
                 if(!apiNames.contains(enteredApi.toLowerCase())){
                     System.out.println(enteredApi + " is not in available api's, try again");
                     allValid = false;
+                    apis.clear();
                     break;
                 }
                 else{
@@ -60,7 +62,7 @@ public class CliManager {
     public static String readFormat() throws NoSuchElementException {
         System.out.println("Choose the output format:\n 1. JSON\n 2. CSV");
         while(true){
-            java.lang.String formatStr = in.nextLine().trim();
+            String formatStr = in.nextLine().trim();
             if(formatStr.equals("1") || formatStr.equalsIgnoreCase("json")){
                 return "json";
             }
@@ -73,18 +75,20 @@ public class CliManager {
         }
     }
 
-    public static java.lang.String readParameter(API api) throws NoSuchElementException {
-        java.lang.String message = api.name().toLowerCase() + ": Write " + api.getParamName();
+    public static String readParameter(API api) throws NoSuchElementException {
+        String message = api.name().toLowerCase() + ": Write " + api.getParameter();
         if(api.getComment().isEmpty()){
             System.out.println(message);
         }
         else{
             System.out.println(message + " " + api.getComment());
         }
-        return in.nextLine().trim();
+        String parameter = in.nextLine().trim();
+        return URLEncoder.encode(parameter, StandardCharsets.UTF_8);
+
     }
 
-    public static java.lang.String readFileName() throws NoSuchElementException {
+    public static String readFileName() throws NoSuchElementException {
         System.out.println("Choose the file name:");
         while(true){
             String fileName = in.nextLine().trim();
@@ -97,7 +101,7 @@ public class CliManager {
     }
 
     public static API readApi() throws NoSuchElementException {
-        List<java.lang.String> apiNames = new ArrayList<>();
+        List<String> apiNames = new ArrayList<>();
         for (API api : API.values()) {
             apiNames.add(api.name().toLowerCase());
         }
@@ -106,7 +110,7 @@ public class CliManager {
             System.out.println((api.ordinal() + 1) + ". " + api.name().toLowerCase());
         }
         while (true) {
-            java.lang.String line = in.nextLine().trim();
+            String line = in.nextLine().trim();
             if (isInteger(line)) {
                 int num = Integer.parseInt(line);
                 if (num >= 1 && num <= API.values().length) {
@@ -120,11 +124,14 @@ public class CliManager {
         }
     }
 
-    public static java.lang.String readFileMode() throws NoSuchElementException {
-        System.out.println("Select the file mode: create a new one or add " +
-                "to an existing one:\n 1. create\n 2. add");
+    public static String readFileMode() throws NoSuchElementException {
+        System.out.println("""
+                Select the file mode: create a new one or add \
+                to an existing one:
+                 1. create
+                 2. add""");
         while(true){
-            java.lang.String line = in.nextLine().trim();
+            String line = in.nextLine().trim();
             if(line.equals("1") || line.equals("create")){
                 return "create";
             }
@@ -137,11 +144,14 @@ public class CliManager {
         }
     }
 
-    public static java.lang.String readOutputMode() throws NoSuchElementException {
-        System.out.println("Select the output mode: display the contents of the file " +
-                "either in its entirety or using a specific API.\n 1. fully\n 2. by api");
+    public static String readOutputMode() throws NoSuchElementException {
+        System.out.println("""
+                Select the output mode: display the contents of the file \
+                either in its entirety or using a specific API.
+                 1. fully
+                 2. by api""");
         while(true){
-            java.lang.String line = in.nextLine().trim();
+            String line = in.nextLine().trim();
             if(line.equals("1") || line.equals("fully")){
                 return "fully";
             }
@@ -154,7 +164,7 @@ public class CliManager {
         }
     }
 
-    private static boolean isInteger(java.lang.String str){
+    private static boolean isInteger(String str){
         try{
             Integer.parseInt(str);
             return true;

@@ -4,23 +4,23 @@ import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.node.ArrayNode;
 import org.example.API;
 import org.example.Converter;
-import org.example.exceptions.FileProcessingException;
+import org.example.exception.FileProcessingException;
 
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 
 
-public class JsonFormat extends FileFormat {
+public class JsonFileManager extends FileManager {
 
     @Override
-    public void writeToNewFile(String fileName, ArrayNode data) {
+    public void writeToNewFile(String fileName, ArrayNode data) throws FileProcessingException {
         Path path = Path.of(dirName, fileName);
         try{
             Converter.getMapper().writerWithDefaultPrettyPrinter()
                     .writeValue(path.toFile(), data);
         } catch (IOException e){
-            System.err.println("Error writing file " + path.toString());
+            throw new FileProcessingException("Error writing file " + path);
         }
     }
 
@@ -28,15 +28,15 @@ public class JsonFormat extends FileFormat {
     public void writeToExistingFile(String fileName, ArrayNode data) throws FileProcessingException {
         Path path = Path.of(dirName, fileName);
         if(!Files.exists(path)){
-            throw new FileProcessingException("File " + path.toString() + " does not exist.");
+            writeToNewFile(fileName, data);
+            return;
         }
         try{
             ArrayNode arrayNode;
             if (Files.size(path) > 0) {
                 JsonNode existing = Converter.getMapper().readTree(path.toFile());
                 if (!existing.isArray()) {
-                    System.err.println("File " + path.toString() + " is not a JSON array.");
-                    return;
+                    throw new FileProcessingException("File " + path + " is not a JSON array.");
                 }
                 arrayNode = (ArrayNode) existing;
             } else {
@@ -45,12 +45,12 @@ public class JsonFormat extends FileFormat {
             arrayNode.addAll(data);
             Converter.getMapper().writerWithDefaultPrettyPrinter().writeValue(path.toFile(), arrayNode);
         } catch(IOException e){
-            System.err.println("Error writing file " + path.toString());
+            throw new FileProcessingException("Error writing file " + path);
         }
     }
 
     @Override
-    public void printAll(String fileName) {
+    public void printAll(String fileName) throws FileProcessingException {
         Path filePath = Path.of(dirName, fileName);
         try {
             ArrayNode records = (ArrayNode) Converter.getMapper().readTree(filePath.toFile());
@@ -58,12 +58,12 @@ public class JsonFormat extends FileFormat {
                 System.out.println(Converter.getMapper().writerWithDefaultPrettyPrinter().writeValueAsString(record));
             }
         } catch (IOException e){
-            System.err.println("Error reading file " + filePath);
+            throw new FileProcessingException("Error reading file " + filePath);
         }
     }
 
     @Override
-    public void printByApi(String fileName, API api) {
+    public void printByApi(String fileName, API api) throws FileProcessingException {
         Path filePath = Path.of(dirName, fileName);
         boolean found = false;
         try {
@@ -75,10 +75,10 @@ public class JsonFormat extends FileFormat {
                 }
             }
             if(!found){
-                System.out.println("️ There is no records for "+ api.name());
+                System.err.println("No records found for API " + api.name() + " in file " + filePath);
             }
-        } catch (IOException e){
-            System.err.println("Error reading file " + filePath);
+        }catch (IOException e){
+            throw new FileProcessingException("Error reading file " + filePath);
         }
     }
 }

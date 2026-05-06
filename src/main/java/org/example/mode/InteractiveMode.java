@@ -3,49 +3,57 @@ package org.example.mode;
 import org.example.API;
 import org.example.Aggregator;
 import org.example.CliManager;
-import org.example.exceptions.FileProcessingException;
-import org.example.format.CsvFormat;
-import org.example.format.FileFormat;
-import org.example.format.JsonFormat;
-
-import java.nio.file.Path;
+import org.example.exception.FileProcessingException;
+import org.example.exception.NoDataException;
+import org.example.format.CsvFileManager;
+import org.example.format.FileManager;
+import org.example.format.JsonFileManager;
 import java.util.NoSuchElementException;
 
 public class InteractiveMode implements Mode {
 
     @Override
-    public void start() throws NoSuchElementException, FileProcessingException {
+    public void start() throws NoSuchElementException, NoDataException, FileProcessingException {
         System.out.println("Interactive Mode");
         API api;
         String formatName;
-        FileFormat fileFormat;
-        java.lang.String fileMode;
-        java.lang.String outputMode;
+        FileManager fileManager;
+        String fileMode;
+        String outputMode;
         api = CliManager.readApi();
         formatName = CliManager.readFormat();
+
         if(formatName.equals("json")){
-            fileFormat = new JsonFormat();
+            fileManager = new JsonFileManager();
         }
         else{
-            fileFormat = new CsvFormat();
+            fileManager = new CsvFileManager();
         }
+
         Aggregator.aggregateData(api);
+
+        if(Aggregator.getData().isEmpty()){
+            throw new NoDataException("No data was aggregated from the API");
+        }
+
         fileMode = CliManager.readFileMode();
         String fileName = CliManager.readFileName() + "." + formatName;
+
         if(fileMode.equals("create")){
-            fileFormat.writeToNewFile(fileName, Aggregator.getData());
+            fileManager.writeToNewFile(fileName, Aggregator.getData());
         }
         else{
-            fileFormat.writeToExistingFile(fileName, Aggregator.getData());
+            fileManager.writeToExistingFile(fileName, Aggregator.getData());
         }
+
         outputMode = CliManager.readOutputMode();
+
         if(outputMode.equals("fully")){
-            fileFormat.printAll(fileName);
+            fileManager.printAll(fileName);
         }
         else{
             API outputApi = CliManager.readApi();
-            fileFormat.printByApi(fileName, outputApi);
+            fileManager.printByApi(fileName, outputApi);
         }
-
     }
 }
