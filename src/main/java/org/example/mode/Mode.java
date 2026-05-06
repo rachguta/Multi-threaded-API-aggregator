@@ -1,9 +1,9 @@
 package org.example.mode;
-
-import org.example.exceptions.FileProcessingException;
+import org.example.exception.FileProcessingException;
+import org.example.exception.NoDataException;
 
 import java.util.NoSuchElementException;
 
 public interface Mode {
-    public void start() throws NoSuchElementException, FileProcessingException;
+    void start() throws NoSuchElementException, NoDataException, FileProcessingException;
 }

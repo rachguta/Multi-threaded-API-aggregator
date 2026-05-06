@@ -1,5 +1,6 @@
 package org.example;
-import org.example.exceptions.FileProcessingException;
+import org.example.exception.FileProcessingException;
+import org.example.exception.NoDataException;
 import org.example.mode.Mode;
 import java.util.*;
 
@@ -8,13 +9,11 @@ public class Main {
         try {
             Mode mode = CliManager.readMode();
             mode.start();
-
-        } catch (FileProcessingException e){
+        }catch (FileProcessingException | NoDataException e) {
             System.err.println(e.getMessage());
-        } catch (NoSuchElementException e) {
+        }
+        catch (NoSuchElementException e) {
             System.err.println("Input stream has closed too early");
         }
     }
-
 }
-
