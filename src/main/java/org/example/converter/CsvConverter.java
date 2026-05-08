@@ -1,43 +1,14 @@
-package org.example;
+package org.example.converter;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.JsonNode;
-import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ArrayNode;
-import com.fasterxml.jackson.databind.node.ObjectNode;
 
-import java.time.OffsetDateTime;
-import java.time.ZoneOffset;
-import java.time.format.DateTimeFormatter;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.LinkedHashMap;
+import java.util.List;
+import java.util.Map;
 
-public class Converter {
-    private static final ObjectMapper mapper = new ObjectMapper();
-
-    public static ObjectMapper getMapper() {
-        return mapper;
-    }
-
-    public static Optional<JsonNode> convertToJsonNode(String body, int id, API api) {
-        try {
-            if(body == null) return Optional.empty();
-            JsonNode data = mapper.readTree(body);
-            ObjectNode nodeWithMetaData = mapper.createObjectNode();
-            nodeWithMetaData.put("id", id);
-            nodeWithMetaData.put("source", api.name().toLowerCase());
-            OffsetDateTime now = OffsetDateTime.now(ZoneOffset.UTC);
-            String timestamp = now.format(DateTimeFormatter.ISO_OFFSET_DATE_TIME);
-            nodeWithMetaData.put("timestamp", timestamp);
-            nodeWithMetaData.set("data", data);
-            return Optional.of(nodeWithMetaData);
-        }
-         catch(JsonProcessingException e){
-            System.err.println("Failed to create java object from response body of " + api.name().toLowerCase());
-            return Optional.empty();
-         }
-    }
-
-
+public class CsvConverter extends Converter{
     public static List<Map<String, String>> convertToRows(ArrayNode records) {
         List<Map<String, String>> allRows = new ArrayList<>();
 
@@ -118,5 +89,4 @@ public class Converter {
         result.clear();
         result.addAll(joined);
     }
-
 }

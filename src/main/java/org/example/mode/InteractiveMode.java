@@ -5,9 +5,10 @@ import org.example.Aggregator;
 import org.example.CliManager;
 import org.example.exception.FileProcessingException;
 import org.example.exception.NoDataException;
-import org.example.format.CsvFileManager;
-import org.example.format.FileManager;
-import org.example.format.JsonFileManager;
+import org.example.filemanager.CsvFileManager;
+import org.example.filemanager.FileManager;
+import org.example.filemanager.JsonFileManager;
+
 import java.util.NoSuchElementException;
 
 public class InteractiveMode implements Mode {
@@ -15,12 +16,12 @@ public class InteractiveMode implements Mode {
     @Override
     public void start() throws NoSuchElementException, NoDataException, FileProcessingException {
         System.out.println("Interactive Mode");
-        API api;
+        API[] apis;
         String formatName;
         FileManager fileManager;
         String fileMode;
         String outputMode;
-        api = CliManager.readApi();
+        apis = CliManager.readApis();
         formatName = CliManager.readFormat();
 
         if(formatName.equals("json")){
@@ -30,14 +31,23 @@ public class InteractiveMode implements Mode {
             fileManager = new CsvFileManager();
         }
 
-        Aggregator.aggregateData(api);
+        for(API api : apis){
+            if(!api.getParameter().isEmpty()){
+                String parameter = CliManager.readParameter(api);
+                Aggregator.aggregateData(api, api.createUrlWithParameter(parameter));
+            }
+            else{
+                Aggregator.aggregateData(api, api.getUrl());
+            }
+        }
 
         if(Aggregator.getData().isEmpty()){
-            throw new NoDataException("No data was aggregated from the API");
+            throw new NoDataException("No data was aggregated from the APIs");
         }
 
         fileMode = CliManager.readFileMode();
-        String fileName = CliManager.readFileName() + "." + formatName;
+
+        String fileName = CliManager.readFileName() + "."  + formatName;
 
         if(fileMode.equals("create")){
             fileManager.writeToNewFile(fileName, Aggregator.getData());
@@ -55,5 +65,6 @@ public class InteractiveMode implements Mode {
             API outputApi = CliManager.readApi();
             fileManager.printByApi(fileName, outputApi);
         }
+
     }
 }

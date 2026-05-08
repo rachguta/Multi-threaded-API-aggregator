@@ -1,4 +1,4 @@
-package org.example.format;
+package org.example.filemanager;
 
 import com.fasterxml.jackson.databind.node.ArrayNode;
 import org.example.API;

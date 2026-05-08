@@ -7,6 +7,9 @@ import org.apache.hc.client5.http.impl.classic.HttpClients;
 import org.apache.hc.core5.http.*;
 import org.apache.hc.core5.http.io.entity.EntityUtils;
 import org.apache.hc.core5.http.io.support.ClassicRequestBuilder;
+import org.example.converter.Converter;
+import org.example.converter.JsonConverter;
+
 import java.io.IOException;
 import java.util.*;
 
@@ -14,15 +17,7 @@ public class Aggregator {
     private static final ArrayNode data = Converter.getMapper().createArrayNode();
     private static int currentId = 0;
 
-    public static void aggregateData(API api) {
-        String url;
-        if(api.getParameter().isEmpty()){
-            url = api.getUrl();
-        }
-        else{
-            String parameter = CliManager.readParameter(api);
-            url = api.getUrl() + parameter;
-        }
+    public static void aggregateData(API api, String url) {
         Optional<String> response = sendRequest(api, url);
         response.ifPresent(s -> saveData(s, api));
     }
@@ -49,7 +44,7 @@ public class Aggregator {
 
      private static void saveData(String body, API api) {
         int newId = currentId + 1;
-        Optional<JsonNode> node = Converter.convertToJsonNode(body, newId, api);
+        Optional<JsonNode> node = JsonConverter.convertToJsonNode(body, newId, api);
         if(node.isPresent()){
             currentId = newId;
             data.add(node.get());
