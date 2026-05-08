@@ -1,4 +1,4 @@
-package org.example.format;
+package org.example.filemanager;
 
 import com.fasterxml.jackson.databind.node.ArrayNode;
 import org.apache.commons.csv.CSVFormat;
@@ -6,7 +6,7 @@ import org.apache.commons.csv.CSVParser;
 import org.apache.commons.csv.CSVPrinter;
 import org.apache.commons.csv.CSVRecord;
 import org.example.API;
-import org.example.Converter;
+import org.example.converter.CsvConverter;
 import org.example.exception.FileProcessingException;
 import java.io.FileWriter;
 import java.io.IOException;
@@ -22,7 +22,7 @@ public class CsvFileManager extends FileManager {
     @Override
     public void writeToNewFile(String fileName, ArrayNode data) throws FileProcessingException {
         Path path = Path.of(dirName, fileName);
-        List<Map<String, String>> rows = Converter.convertToRows(data);
+        List<Map<String, String>> rows = CsvConverter.convertToRows(data);
         writeToFile(path, rows);
     }
 
@@ -35,7 +35,7 @@ public class CsvFileManager extends FileManager {
             return;
         }
 
-        List<Map<String, String>> newRows = Converter.convertToRows(data);
+        List<Map<String, String>> newRows = CsvConverter.convertToRows(data);
         List<Map<String, String>> allRows = new ArrayList<>();
 
         try (Reader reader = Files.newBufferedReader(path, StandardCharsets.UTF_8)) {

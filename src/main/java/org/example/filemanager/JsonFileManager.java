@@ -1,9 +1,9 @@
-package org.example.format;
+package org.example.filemanager;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.node.ArrayNode;
 import org.example.API;
-import org.example.Converter;
+import org.example.converter.Converter;
 import org.example.exception.FileProcessingException;
 
 import java.io.IOException;

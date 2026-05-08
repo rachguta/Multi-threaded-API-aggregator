@@ -5,5 +5,5 @@ import org.example.exception.NoDataException;
 import java.util.NoSuchElementException;
 
 public interface Mode {
-    void start() throws NoSuchElementException, NoDataException, FileProcessingException;
+    void start() throws IllegalArgumentException, NoSuchElementException, NoDataException, FileProcessingException;
 }

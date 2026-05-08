@@ -1,9 +1,5 @@
 package org.example;
 
-import org.example.mode.AutoMode;
-import org.example.mode.InteractiveMode;
-import org.example.mode.Mode;
-
 
 import java.net.URLEncoder;
 import java.nio.charset.StandardCharsets;
@@ -11,22 +7,6 @@ import java.util.*;
 
 public class CliManager {
     private static final Scanner in = new Scanner(System.in);
-
-    public static Mode readMode() throws NoSuchElementException {
-        System.out.println("Choose the mode:\n 1. Auto\n 2. Interactive");
-        while(true){
-            String modeStr = in.nextLine().trim();
-            if(modeStr.equals("1") || modeStr.equalsIgnoreCase("auto")){
-                return new AutoMode();
-            }
-            else if(modeStr.equals("2") || modeStr.equalsIgnoreCase("interactive")){
-                return new InteractiveMode();
-            }
-            else{
-                System.out.println("Invalid value of mode. Try again");
-            }
-        }
-    }
 
     public static API[] readApis() throws NoSuchElementException {
         Set<API> apis = new LinkedHashSet<>();
@@ -57,6 +37,44 @@ public class CliManager {
                 return apis.toArray(new API[0]);
             }
         }
+    }
+
+
+    public static API[] parseApisFromArgs(String[] args) throws IllegalArgumentException {
+        if(args == null || args.length < 2){
+            throw new IllegalArgumentException("Expected at least one api and a format");
+        }
+        List<String> tokens = new ArrayList<>();
+        for(int i = 0; i < args.length - 1; i++){
+            String part = args[i];
+            if(part == null) continue;
+            String[] split = part.trim().split("[,;\\s]+");
+            for(String s : split){
+                if(!s.isBlank()) tokens.add(s.toLowerCase());
+            }
+        }
+        if(tokens.isEmpty()){
+            throw new IllegalArgumentException("No API names were provided");
+        }
+        LinkedHashSet<API> apis = new LinkedHashSet<>();
+        for(String tok : tokens){
+            try{
+                apis.add(API.valueOf(tok.toUpperCase()));
+            }catch(IllegalArgumentException e){
+                throw new IllegalArgumentException("Unknown API name: '" + tok + "'");
+            }
+        }
+        return apis.toArray(new API[0]);
+    }
+
+    public static String parseFormatFromArgs(String[] args) throws IllegalArgumentException {
+        if(args == null || args.length == 0){
+            throw new IllegalArgumentException("Expected format as last argument (json|csv)");
+        }
+        String raw = args[args.length - 1].trim().toLowerCase();
+        if(raw.equals("json")) return "json";
+        if(raw.equals("csv")) return "csv";
+        throw new IllegalArgumentException("Unknown format: '" + raw + "'. Allowed: json, csv");
     }
 
     public static String readFormat() throws NoSuchElementException {
