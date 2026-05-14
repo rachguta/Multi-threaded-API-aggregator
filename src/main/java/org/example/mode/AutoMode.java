@@ -21,8 +21,8 @@ public class AutoMode implements Mode{
     @Override
     public void start() throws IllegalArgumentException,NoSuchElementException, NoDataException, FileProcessingException {
         System.out.println("Auto mode");
-        API[] apis = CliManager.parseApisFromArgs(args);
-        String formatName = CliManager.parseFormatFromArgs(args);
+        API[] apis = CliManager.readApisFromArgs(args);
+        String formatName = CliManager.readFormatFromArgs(args);
         FileManager fileManager;
 
         if(formatName.equals("json")){
@@ -41,7 +41,7 @@ public class AutoMode implements Mode{
             throw new NoDataException("No data was aggregated from the APIs");
         }
 
-        String fileName = "res."  + formatName;
+        String fileName = "result."  + formatName;
 
         fileManager.writeToNewFile(fileName, Aggregator.getData());
     }
