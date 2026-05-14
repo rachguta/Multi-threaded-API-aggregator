@@ -40,8 +40,11 @@ public class CliManager {
     }
 
 
-    public static API[] parseApisFromArgs(String[] args) throws IllegalArgumentException {
-        if(args == null || args.length < 2){
+    public static API[] readApisFromArgs(String[] args) throws IllegalArgumentException {
+        if(args.length == 1){
+            args = args[0].trim().split("[,;\\s]+");
+        }
+        if(args.length < 2){
             throw new IllegalArgumentException("Expected at least one api and a format");
         }
         List<String> tokens = new ArrayList<>();
@@ -67,8 +70,11 @@ public class CliManager {
         return apis.toArray(new API[0]);
     }
 
-    public static String parseFormatFromArgs(String[] args) throws IllegalArgumentException {
-        if(args == null || args.length == 0){
+    public static String readFormatFromArgs(String[] args) throws IllegalArgumentException {
+        if(args.length == 1){
+            args = args[0].trim().split("[,;\\s]+");
+        }
+        if(args.length == 0){
             throw new IllegalArgumentException("Expected format as last argument (json|csv)");
         }
         String raw = args[args.length - 1].trim().toLowerCase();
