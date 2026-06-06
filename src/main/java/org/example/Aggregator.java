@@ -9,6 +9,7 @@ import org.apache.hc.core5.http.io.entity.EntityUtils;
 import org.apache.hc.core5.http.io.support.ClassicRequestBuilder;
 import org.example.converter.Converter;
 import org.example.converter.JsonConverter;
+import org.example.exception.RateLimitException;
 
 import java.io.IOException;
 import java.util.*;
@@ -17,32 +18,30 @@ public class Aggregator {
     private static final ArrayNode data = Converter.getMapper().createArrayNode();
     private static int currentId = 0;
 
-    public static void aggregateData(API api, String url) {
-        Optional<String> response = sendRequest(api, url);
-        response.ifPresent(s -> saveData(s, api));
-    }
-
-    public static Optional<String> sendRequest(API api, String url) {
+    public static Optional<String> sendRequest(API api) throws IOException {
         try (CloseableHttpClient httpClient = HttpClients.createDefault()) {
-            ClassicHttpRequest httpGet = ClassicRequestBuilder.get(url).build();
+            ClassicHttpRequest httpGet = ClassicRequestBuilder.get(api.getUrl()).build();
             return httpClient.execute(httpGet, response -> {
                 System.out.println(api.name().toLowerCase() + " " + response.getCode() + " " + response.getReasonPhrase());
                 if (response.getCode() >= 200 && response.getCode() < 300) {
                     HttpEntity entity = response.getEntity();
                     return entity != null ? Optional.of(EntityUtils.toString(entity)) : Optional.empty();
                 }
+                else if(response.getCode() == 429) {
+                    throw new RateLimitException("Too many requests sent to " + api.name().toLowerCase());
+                }
                 return Optional.empty();
             });
-        }catch (IOException e) {
-            System.err.println("Connection error with " + api.name().toLowerCase());
-            return Optional.empty();
-        } catch(IllegalArgumentException e) {
-            System.err.println("Illegal URL syntax for " + api.name().toLowerCase());
-            return Optional.empty();
+        }catch(RateLimitException e){
+            System.err.println(e.getMessage());
+            throw e;
+        } catch(IOException e){
+            System.err.println("Connection error while sending request to " + api.name().toLowerCase());
+            throw e;
         }
     }
 
-     private static void saveData(String body, API api) {
+     public static void saveData(String body, API api) {
         int newId = currentId + 1;
         Optional<JsonNode> node = JsonConverter.convertToJsonNode(body, newId, api);
         if(node.isPresent()){

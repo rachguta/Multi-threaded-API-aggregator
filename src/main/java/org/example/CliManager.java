@@ -1,6 +1,4 @@
 package org.example;
-
-
 import java.net.URLEncoder;
 import java.nio.charset.StandardCharsets;
 import java.util.*;
@@ -39,48 +37,68 @@ public class CliManager {
         }
     }
 
-
-    public static API[] readApisFromArgs(String[] args) throws IllegalArgumentException {
-        if(args.length == 1){
-            args = args[0].trim().split("[,;\\s]+");
-        }
-        if(args.length < 2){
-            throw new IllegalArgumentException("Expected at least one api and a format");
-        }
+    public static List<String> removeSeparators(String[] args) throws IllegalArgumentException {
         List<String> tokens = new ArrayList<>();
-        for(int i = 0; i < args.length - 1; i++){
-            String part = args[i];
-            if(part == null) continue;
-            String[] split = part.trim().split("[,;\\s]+");
+        for(String part : args){
+            String[] split = part.trim().split("[,;]+");
             for(String s : split){
-                if(!s.isBlank()) tokens.add(s.toLowerCase());
+                tokens.add(s.toLowerCase());
             }
         }
-        if(tokens.isEmpty()){
-            throw new IllegalArgumentException("No API names were provided");
+        if(tokens.size() < 4){
+            throw new IllegalArgumentException("Expected at least one api and a three parameters (format, number of tasks, interval)");
         }
+        return tokens;
+    }
+
+    public static API[] readApisFromArgs(List<String> args) throws IllegalArgumentException {
         LinkedHashSet<API> apis = new LinkedHashSet<>();
-        for(String tok : tokens){
+        for(int i = 0; i < args.size() - 3; i++){
             try{
-                apis.add(API.valueOf(tok.toUpperCase()));
+                apis.add(API.valueOf(args.get(i).toUpperCase()));
             }catch(IllegalArgumentException e){
-                throw new IllegalArgumentException("Unknown API name: '" + tok + "'");
+                throw new IllegalArgumentException("Unknown API name: '" + args.get(i) + "'");
             }
         }
         return apis.toArray(new API[0]);
     }
 
-    public static String readFormatFromArgs(String[] args) throws IllegalArgumentException {
-        if(args.length == 1){
-            args = args[0].trim().split("[,;\\s]+");
-        }
-        if(args.length == 0){
-            throw new IllegalArgumentException("Expected format as last argument (json|csv)");
-        }
-        String raw = args[args.length - 1].trim().toLowerCase();
+    public static String readFormatFromArgs(List<String> args) throws IllegalArgumentException {
+        String raw = args.get(args.size() - 3).trim().toLowerCase();
         if(raw.equals("json")) return "json";
         if(raw.equals("csv")) return "csv";
         throw new IllegalArgumentException("Unknown format: '" + raw + "'. Allowed: json, csv");
+    }
+
+    public static int readMaxNumOfTasksFromArgs(List<String> args) throws IllegalArgumentException {
+        String raw = args.get(args.size() - 2).trim().toLowerCase();
+        try{
+            int num = Integer.parseInt(raw);
+            if(num > 0){
+                return num;
+            }
+            else{
+                throw new NumberFormatException();
+            }
+        }catch(NumberFormatException e ){
+            throw new IllegalArgumentException("Invalid maximum number of tasks: '" + raw + "'");
+        }
+    }
+
+    public static long readApiIntervalFromArgs(List<String> args) throws IllegalArgumentException {
+        String raw = args.getLast().trim().toLowerCase();
+        try{
+            double num = Double.parseDouble(raw);
+            long numAsLong = (long) (num * 1000);
+            if(num > 0.0){
+                return numAsLong;
+            }
+            else{
+                throw new NumberFormatException();
+            }
+        }catch(NumberFormatException e ){
+            throw new IllegalArgumentException("Invalid value of interval: '" + raw + "'");
+        }
     }
 
     public static String readFormat() throws NoSuchElementException {
@@ -100,7 +118,7 @@ public class CliManager {
     }
 
     public static String readParameter(API api) throws NoSuchElementException {
-        String message = api.name().toLowerCase() + ": Write " + api.getParameter();
+        String message = api.name().toLowerCase() + ": Write " + api.getParameterName();
         if(api.getComment().isEmpty()){
             System.out.println(message);
         }
@@ -186,6 +204,53 @@ public class CliManager {
                 System.out.println("Invalid value of output mode. Try again");
             }
         }
+    }
+
+    public static int readMaxNumOfTasks() throws NoSuchElementException {
+        System.out.println("Write the maximum number of tasks to run in parallel (positive integer):");
+        while(true){
+            String line = in.nextLine().trim();
+            try {
+                int num = Integer.parseInt(line);
+                if (num > 0) {
+                    return num;
+                }
+                else{
+                    throw new NumberFormatException();
+                }
+             }catch(NumberFormatException e){
+                System.out.println("Invalid value of number of tasks. Try again");
+            }
+        }
+    }
+
+    public static long readApiInterval() throws NoSuchElementException {
+        System.out.println("Write the interval of polling the APIs in seconds (positive double):");
+        while(true) {
+            String line = in.nextLine().trim();
+            try {
+                double num = Double.parseDouble(line);
+                long numAsLong = (long) (num * 1000);
+                if (num > 0.0) {
+                    return numAsLong;
+                }
+                else{
+                    throw new NumberFormatException();
+                }
+            } catch (NumberFormatException e) {
+                System.out.println("Invalid value of interval. Try again");
+            }
+        }
+    }
+
+    public static void readStartingPolling() throws NoSuchElementException {
+        System.out.println("Press Enter to start the program...");
+        in.nextLine();
+    }
+
+    public static void readStoppingPolling() throws NoSuchElementException {
+        System.out.println("Press Enter to stop the program...");
+        in.nextLine();
     }
 
     private static boolean isInteger(String str){
