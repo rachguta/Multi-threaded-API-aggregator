@@ -6,12 +6,12 @@ import org.example.CliManager;
 import org.example.exception.FileProcessingException;
 import org.example.exception.NoDataException;
 import org.example.filemanager.CsvFileManager;
-import org.example.filemanager.FileManager;
 import org.example.filemanager.JsonFileManager;
-
+import java.util.List;
 import java.util.NoSuchElementException;
 
-public class AutoMode implements Mode{
+
+public class AutoMode extends Mode{
     String[] args;
 
     public AutoMode(String[] args) {
@@ -19,12 +19,32 @@ public class AutoMode implements Mode{
     }
 
     @Override
-    public void start() throws IllegalArgumentException,NoSuchElementException, NoDataException, FileProcessingException {
+    public void start() throws IllegalArgumentException, NoSuchElementException, NoDataException, FileProcessingException {
         System.out.println("Auto mode");
-        API[] apis = CliManager.readApisFromArgs(args);
-        String formatName = CliManager.readFormatFromArgs(args);
-        FileManager fileManager;
 
+        List<String> argList = CliManager.removeSeparators(args);
+        apis = CliManager.readApisFromArgs(argList);
+        formatName = CliManager.readFormatFromArgs(argList);
+        maxNumOfTasks = CliManager.readMaxNumOfTasksFromArgs(argList);
+        apiInterval = CliManager.readApiIntervalFromArgs(argList);
+
+        for(API api : apis){
+            if(!api.getParameterName().isEmpty()) {
+                api.createUrlWithDefaultParameter();
+            }
+        }
+
+        startParallelPolling(apis);
+
+        if(Aggregator.getData().isEmpty()){
+            throw new NoDataException("No data was aggregated from the APIs");
+        }
+
+        writeToFile();
+    }
+
+    @Override
+    void writeToFile() throws FileProcessingException {
         if(formatName.equals("json")){
             fileManager = new JsonFileManager();
         }
@@ -32,16 +52,7 @@ public class AutoMode implements Mode{
             fileManager = new CsvFileManager();
         }
 
-        for(API api : apis){
-            String url = api.createUrlWithDefaultParameter();
-            Aggregator.aggregateData(api, url);
-        }
-
-        if(Aggregator.getData().isEmpty()){
-            throw new NoDataException("No data was aggregated from the APIs");
-        }
-
-        String fileName = "result."  + formatName;
+        fileName = "result."  + formatName;
 
         fileManager.writeToNewFile(fileName, Aggregator.getData());
     }

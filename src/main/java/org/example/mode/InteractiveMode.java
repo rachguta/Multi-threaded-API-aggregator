@@ -9,21 +9,43 @@ import org.example.filemanager.CsvFileManager;
 import org.example.filemanager.FileManager;
 import org.example.filemanager.JsonFileManager;
 
+import java.util.ArrayList;
+import java.util.List;
 import java.util.NoSuchElementException;
 
-public class InteractiveMode implements Mode {
+public class InteractiveMode extends Mode {
+    String fileMode;
+    String outputMode;
 
     @Override
     public void start() throws NoSuchElementException, NoDataException, FileProcessingException {
         System.out.println("Interactive Mode");
-        API[] apis;
-        String formatName;
-        FileManager fileManager;
-        String fileMode;
-        String outputMode;
         apis = CliManager.readApis();
         formatName = CliManager.readFormat();
+        maxNumOfTasks = CliManager.readMaxNumOfTasks();
+        apiInterval = CliManager.readApiInterval();
+        for(API api : apis){
+            if(!api.getParameterName().isEmpty()) {
+                String parameter = CliManager.readParameter(api);
+                api.createUrlWithParameter(parameter);
+            }
+        }
 
+        CliManager.readStartingPolling();
+
+        startParallelPolling(apis);
+
+        if(Aggregator.getData().isEmpty()){
+            throw new NoDataException("No data was aggregated from the APIs");
+        }
+
+        writeToFile();
+
+        writeToConsole();
+    }
+
+    @Override
+    void writeToFile() throws FileProcessingException {
         if(formatName.equals("json")){
             fileManager = new JsonFileManager();
         }
@@ -31,23 +53,9 @@ public class InteractiveMode implements Mode {
             fileManager = new CsvFileManager();
         }
 
-        for(API api : apis){
-            if(!api.getParameter().isEmpty()){
-                String parameter = CliManager.readParameter(api);
-                Aggregator.aggregateData(api, api.createUrlWithParameter(parameter));
-            }
-            else{
-                Aggregator.aggregateData(api, api.getUrl());
-            }
-        }
-
-        if(Aggregator.getData().isEmpty()){
-            throw new NoDataException("No data was aggregated from the APIs");
-        }
-
         fileMode = CliManager.readFileMode();
 
-        String fileName = CliManager.readFileName() + "."  + formatName;
+        fileName = CliManager.readFileName() + "."  + formatName;
 
         if(fileMode.equals("create")){
             fileManager.writeToNewFile(fileName, Aggregator.getData());
@@ -55,7 +63,9 @@ public class InteractiveMode implements Mode {
         else{
             fileManager.writeToExistingFile(fileName, Aggregator.getData());
         }
+    }
 
+    void writeToConsole() throws FileProcessingException {
         outputMode = CliManager.readOutputMode();
 
         if(outputMode.equals("fully")){
@@ -65,6 +75,5 @@ public class InteractiveMode implements Mode {
             API outputApi = CliManager.readApi();
             fileManager.printByApi(fileName, outputApi);
         }
-
     }
 }
