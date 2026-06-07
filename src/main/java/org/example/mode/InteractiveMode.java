@@ -6,11 +6,8 @@ import org.example.CliManager;
 import org.example.exception.FileProcessingException;
 import org.example.exception.NoDataException;
 import org.example.filemanager.CsvFileManager;
-import org.example.filemanager.FileManager;
 import org.example.filemanager.JsonFileManager;
 
-import java.util.ArrayList;
-import java.util.List;
 import java.util.NoSuchElementException;
 
 public class InteractiveMode extends Mode {
