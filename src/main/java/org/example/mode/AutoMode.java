@@ -4,7 +4,6 @@ import org.example.Aggregator;
 import org.example.API;
 import org.example.CliManager;
 import org.example.exception.FileProcessingException;
-import org.example.exception.NoDataException;
 import org.example.filemanager.CsvFileManager;
 import org.example.filemanager.JsonFileManager;
 import java.util.List;
@@ -19,7 +18,7 @@ public class AutoMode extends Mode{
     }
 
     @Override
-    public void start() throws IllegalArgumentException, NoSuchElementException, NoDataException, FileProcessingException {
+    public void start() throws IllegalArgumentException, NoSuchElementException, FileProcessingException {
         System.out.println("Auto mode");
 
         List<String> argList = CliManager.removeSeparators(args);
@@ -28,6 +27,16 @@ public class AutoMode extends Mode{
         maxNumOfTasks = CliManager.readMaxNumOfTasksFromArgs(argList);
         apiInterval = CliManager.readApiIntervalFromArgs(argList);
 
+
+        if(formatName.equals("json")) {
+            fileManager = new JsonFileManager("results");
+        }
+        else{
+            fileManager = new CsvFileManager("results");
+        }
+
+        fileManager.createNewFile(fileName + "." + formatName);
+
         for(API api : apis){
             if(!api.getParameterName().isEmpty()) {
                 api.createUrlWithDefaultParameter();
@@ -35,25 +44,5 @@ public class AutoMode extends Mode{
         }
 
         startParallelPolling(apis);
-
-        if(Aggregator.getData().isEmpty()){
-            throw new NoDataException("No data was aggregated from the APIs");
-        }
-
-        writeToFile();
-    }
-
-    @Override
-    void writeToFile() throws FileProcessingException {
-        if(formatName.equals("json")){
-            fileManager = new JsonFileManager();
-        }
-        else{
-            fileManager = new CsvFileManager();
-        }
-
-        fileName = "result."  + formatName;
-
-        fileManager.writeToNewFile(fileName, Aggregator.getData());
     }
 }

@@ -3,8 +3,8 @@ package org.example;
 public enum API {
     STEAM("https://store.steampowered.com/api/salepage/?id=", "franchise name","gta", "(separate words using \"-\")"),
     SPACEX("https://api.spacexdata.com/v3/history?id=", "history event id", "1","(write a number)"),
-    IMDB("https://imdb.iamidiotareyoutoo.com/search?q=", "movie name", "star+wars", "" );
-
+    IMDB("https://imdb.iamidiotareyoutoo.com/search?q=", "movie name", "star+wars", "" ),
+    OPEN_METEO("https://api.open-meteo.com/v1/forecast?latitude=55.7558&longitude=37.6173&current_weather=true", "", "", "");
     private String url;
     private final String parameterName;
     private final String defaultParameterValue;

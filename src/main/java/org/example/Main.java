@@ -1,6 +1,5 @@
 package org.example;
 import org.example.exception.FileProcessingException;
-import org.example.exception.NoDataException;
 import org.example.mode.AutoMode;
 import org.example.mode.InteractiveMode;
 import org.example.mode.Mode;
@@ -17,7 +16,7 @@ public class Main {
                 mode = new AutoMode(args);
             }
             mode.start();
-        }catch (FileProcessingException | IllegalArgumentException | NoDataException e) {
+        }catch (FileProcessingException | IllegalArgumentException e) {
             System.err.println(e.getMessage());
         }
         catch (NoSuchElementException e) {

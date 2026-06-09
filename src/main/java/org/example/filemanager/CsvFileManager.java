@@ -1,5 +1,6 @@
 package org.example.filemanager;
 
+import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.node.ArrayNode;
 import org.apache.commons.csv.CSVFormat;
 import org.apache.commons.csv.CSVParser;
@@ -19,23 +20,23 @@ import java.util.stream.Stream;
 
 public class CsvFileManager extends FileManager {
 
-    @Override
-    public void writeToNewFile(String fileName, ArrayNode data) throws FileProcessingException {
-        Path path = Path.of(dirName, fileName);
-        List<Map<String, String>> rows = CsvConverter.convertToRows(data);
-        writeToFile(path, rows);
+    public CsvFileManager(String dirName){
+        super(dirName);
     }
-
     @Override
-    public void writeToExistingFile(String fileName, ArrayNode data) throws FileProcessingException {
+    public void writeToExistingFile(String fileName, JsonNode data) throws FileProcessingException {
         Path path = Path.of(dirName, fileName);
 
         if (!Files.exists(path)) {
-            writeToNewFile(fileName, data);
-            return;
+            createNewFile(fileName);
+        }
+
+        if(data.isEmpty()){
+            throw new FileProcessingException("Empty CSV rows, nothing to write to file " + path);
         }
 
         List<Map<String, String>> newRows = CsvConverter.convertToRows(data);
+
         List<Map<String, String>> allRows = new ArrayList<>();
 
         try (Reader reader = Files.newBufferedReader(path, StandardCharsets.UTF_8)) {

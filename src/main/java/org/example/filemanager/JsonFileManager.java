@@ -13,36 +13,27 @@ import java.nio.file.Path;
 
 public class JsonFileManager extends FileManager {
 
-    @Override
-    public void writeToNewFile(String fileName, ArrayNode data) throws FileProcessingException {
-        Path path = Path.of(dirName, fileName);
-        try{
-            Converter.getMapper().writerWithDefaultPrettyPrinter()
-                    .writeValue(path.toFile(), data);
-        } catch (IOException e){
-            throw new FileProcessingException("Error writing file " + path);
-        }
+    public JsonFileManager(String dirName){
+        super(dirName);
     }
-
     @Override
-    public void writeToExistingFile(String fileName, ArrayNode data) throws FileProcessingException {
+    public void writeToExistingFile(String fileName, JsonNode data) throws FileProcessingException {
         Path path = Path.of(dirName, fileName);
         if(!Files.exists(path)){
-            writeToNewFile(fileName, data);
-            return;
+            createNewFile(fileName);
         }
         try{
             ArrayNode arrayNode;
             if (Files.size(path) > 0) {
                 JsonNode existing = Converter.getMapper().readTree(path.toFile());
                 if (!existing.isArray()) {
-                    throw new FileProcessingException("File " + path + " is not a JSON array.");
+                    throw new IOException();
                 }
                 arrayNode = (ArrayNode) existing;
             } else {
                 arrayNode = Converter.getMapper().createArrayNode();
             }
-            arrayNode.addAll(data);
+            arrayNode.add(data);
             Converter.getMapper().writerWithDefaultPrettyPrinter().writeValue(path.toFile(), arrayNode);
         } catch(IOException e){
             throw new FileProcessingException("Error writing file " + path);
@@ -53,11 +44,18 @@ public class JsonFileManager extends FileManager {
     public void printAll(String fileName) throws FileProcessingException {
         Path filePath = Path.of(dirName, fileName);
         try {
-            ArrayNode records = (ArrayNode) Converter.getMapper().readTree(filePath.toFile());
+            JsonNode root = Converter.getMapper().readTree(filePath.toFile());
+            if(!root.isArray()){
+                throw new FileProcessingException("Invalid JSON format in file " + filePath + ": expected an array of records");
+            }
+            ArrayNode records = (ArrayNode) root;
             for (JsonNode record : records) {
                 System.out.println(Converter.getMapper().writerWithDefaultPrettyPrinter().writeValueAsString(record));
             }
-        } catch (IOException e){
+        }catch(FileProcessingException e){
+            throw e;
+        }
+        catch (IOException e){
             throw new FileProcessingException("Error reading file " + filePath);
         }
     }

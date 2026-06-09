@@ -1,7 +1,6 @@
 package org.example.converter;
 
 import com.fasterxml.jackson.databind.JsonNode;
-import com.fasterxml.jackson.databind.node.ArrayNode;
 
 import java.util.ArrayList;
 import java.util.LinkedHashMap;
@@ -9,36 +8,34 @@ import java.util.List;
 import java.util.Map;
 
 public class CsvConverter extends Converter{
-    public static List<Map<String, String>> convertToRows(ArrayNode records) {
+    public static List<Map<String, String>> convertToRows(JsonNode record) {
         List<Map<String, String>> allRows = new ArrayList<>();
 
-        if(records == null) {
+        if(record == null) {
             System.err.println("Data is null, cannot convert to rows.");
             return allRows;
         }
 
-        for (JsonNode record : records) {
-            Map<String, String> metadata = new LinkedHashMap<>();
+        Map<String, String> metadata = new LinkedHashMap<>();
 
-            String id = record.path("id").asText("");
-            String source = record.path("source").asText("");
-            String timestamp = record.path("timestamp").asText("");
+        String id = record.path("id").asText("");
+        String source = record.path("source").asText("");
+        String timestamp = record.path("timestamp").asText("");
 
-            metadata.put("id", id);
-            metadata.put("source", source);
-            metadata.put("timestamp", timestamp);
+        metadata.put("id", id);
+        metadata.put("source", source);
+        metadata.put("timestamp", timestamp);
 
-            JsonNode data = record.path("data");
+        JsonNode data = record.path("data");
 
-            List<Map<String, String>> dataRows = expand(data, source);
+        List<Map<String, String>> dataRows = expand(data, source);
 
-            for (Map<String, String> dataRow : dataRows) {
-                Map<String, String> fullRow = new LinkedHashMap<>(metadata);
-                fullRow.putAll(dataRow);
-                allRows.add(fullRow);
-            }
-
+        for (Map<String, String> dataRow : dataRows) {
+            Map<String, String> fullRow = new LinkedHashMap<>(metadata);
+            fullRow.putAll(dataRow);
+            allRows.add(fullRow);
         }
+
         return allRows;
     }
 
