@@ -15,7 +15,7 @@ class CliManagerTest {
         void shouldReturnSingleApi_whenValidNameProvided() {
             Scanner scanner = new Scanner("steam\n");
             CliManager cli = new CliManager(scanner);
-            API[] result = assertDoesNotThrow(() -> cli.readApis());
+            API[] result = assertDoesNotThrow(cli::readApis);
             assertEquals(1, result.length);
             assertEquals(API.STEAM, result[0]);
         }
@@ -24,7 +24,7 @@ class CliManagerTest {
         void shouldReturnMultipleApis_whenCommaSeparatedNamesProvided() {
             Scanner scanner = new Scanner("steam, spacex\n");
             CliManager cli = new CliManager(scanner);
-            API[] result = assertDoesNotThrow(() -> cli.readApis());
+            API[] result = assertDoesNotThrow(cli::readApis);
             assertEquals(2, result.length);
             assertEquals(API.STEAM, result[0]);
             assertEquals(API.SPACEX, result[1]);
@@ -34,7 +34,7 @@ class CliManagerTest {
         void shouldAskAgain_whenInvalidApiProvidedFirst() {
             Scanner scanner = new Scanner("invalid\nsteam\n");
             CliManager cli = new CliManager(scanner);
-            API[] result = assertDoesNotThrow(() -> cli.readApis());
+            API[] result = assertDoesNotThrow(cli::readApis);
             assertEquals(1, result.length);
             assertEquals(API.STEAM, result[0]);
         }

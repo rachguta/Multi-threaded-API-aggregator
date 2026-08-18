@@ -1,7 +1,6 @@
 package org.example.mode;
 
 import org.example.API;
-import org.example.Aggregator;
 import org.example.CliManager;
 import org.example.exception.FileProcessingException;
 import org.example.filemanager.CsvFileManager;

@@ -11,7 +11,7 @@ import java.nio.file.Path;
 import java.nio.file.StandardOpenOption;
 
 public abstract class FileManager {
-    protected String dirName = "results";
+    protected String dirName;
 
     protected FileManager(String dirName){
         this.dirName = dirName;
