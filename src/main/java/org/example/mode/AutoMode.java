@@ -1,6 +1,5 @@
 package org.example.mode;
 
-import org.example.Aggregator;
 import org.example.API;
 import org.example.CliManager;
 import org.example.exception.FileProcessingException;
